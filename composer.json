@@ -1,0 +1,28 @@
+{
+  "name": "carlonicora/minimalism-service-builder",
+  "description": "builder service for minimalism",
+  "version": "1.0.0",
+  "homepage": "https://carlonicora.com",
+  "time": "2021-02-10",
+  "license": "MIT",
+  "type": "library",
+  "minimum-stability": "stable",
+  "authors": [
+    {
+      "name": "Carlo Nicora",
+      "email": "carlo@carlonicora.com",
+      "homepage": "http://carlonicora.com",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "CarloNicora\\Minimalism\\Services\\Builder\\":"src/"
+    }
+  },
+  "require": {
+    "php": ">=8.0",
+    "ext-json": "*",
+    "carlonicora/minimalism": "~12.2"
+  }
+}
