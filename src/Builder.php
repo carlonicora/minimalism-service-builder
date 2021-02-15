@@ -190,7 +190,7 @@ class Builder implements ServiceInterface, BuilderInterface
                             $this->createBuilder(
                                 builderClassName: $builderClassName,
                                 data: $record,
-                                relationshipLevel: $relationshipLevel
+                                relationshipLevel: $relationship->isDontLoadChildren() ? 0 : $relationshipLevel
                             )
                         );
                     }
@@ -201,7 +201,7 @@ class Builder implements ServiceInterface, BuilderInterface
                         $this->createBuilder(
                             builderClassName: $builderClassName,
                             data: $data,
-                            relationshipLevel: $relationshipLevel
+                            relationshipLevel: $relationship->isDontLoadChildren() ? 0 : $relationshipLevel
                         )
                     );
                 }

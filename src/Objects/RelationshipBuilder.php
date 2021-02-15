@@ -10,11 +10,13 @@ class RelationshipBuilder
      * @param string $name
      * @param string $builderClassName
      * @param DataFunctionInterface $function
+     * @param bool $dontLoadChildren
      */
     public function __construct(
         private string $name,
         private string $builderClassName,
         private DataFunctionInterface $function,
+        private bool $dontLoadChildren=false,
     )
     {
     }
@@ -25,6 +27,14 @@ class RelationshipBuilder
     public function getName(): string
     {
         return $this->name;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDontLoadChildren(): bool
+    {
+        return $this->dontLoadChildren;
     }
 
     /**
