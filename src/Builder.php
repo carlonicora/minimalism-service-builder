@@ -75,8 +75,6 @@ class Builder implements ServiceInterface, BuilderInterface
         }
 
         if ($response === null) {
-            $response = [];
-
             if ($function->getType() === DataFunctionInterface::TYPE_TABLE){
                 $data = $this->data->readByDataFunction(
                     $function
@@ -86,25 +84,49 @@ class Builder implements ServiceInterface, BuilderInterface
                 $data = $dataLoader->{$function->getFunctionName()}(...$function->getParameters());
             }
 
-            if (array_key_exists(0, $data)) {
-                foreach ($data ?? [] as $record) {
-                    $response[] = $this->createBuilder(
-                        builderClassName: $resourceTransformerClass,
-                        data: $record,
-                        relationshipLevel: $relationshipLevel,
-                    );
-                }
-            } else {
-                $response[] = $this->createBuilder(
-                    builderClassName: $resourceTransformerClass,
-                    data: $data,
-                    relationshipLevel: $relationshipLevel,
-                );
-            }
+            $response = $this->buildByData(
+                resourceTransformerClass: $resourceTransformerClass,
+                data: $data,
+                relationshipLevel: $relationshipLevel
+            );
 
             if ($this->cache !== null && $function->getCacheBuilder() !== null && $this->cache->useCaching()) {
                 $this->cache->save($function->getCacheBuilder(), serialize($response), CacheBuilderInterface::JSON);
             }
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param string $resourceTransformerClass
+     * @param array $data
+     * @param int $relationshipLevel
+     * @return array
+     * @throws Exception
+     */
+    public function buildByData(
+        string $resourceTransformerClass,
+        array $data,
+        int $relationshipLevel=1
+    ): array
+    {
+        $response = [];
+
+        if (array_key_exists(0, $data)) {
+            foreach ($data ?? [] as $record) {
+                $response[] = $this->createBuilder(
+                    builderClassName: $resourceTransformerClass,
+                    data: $record,
+                    relationshipLevel: $relationshipLevel,
+                );
+            }
+        } else {
+            $response[] = $this->createBuilder(
+                builderClassName: $resourceTransformerClass,
+                data: $data,
+                relationshipLevel: $relationshipLevel,
+            );
         }
 
         return $response;
