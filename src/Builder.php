@@ -81,7 +81,8 @@ class Builder implements ServiceInterface, BuilderInterface
                 );
             } else {
                 $dataLoader = $this->pools->get($function->getClassName());
-                $data = $dataLoader->{$function->getFunctionName()}(...$function->getParameters());
+                $parameters = $function->getParameters() ?? [];
+                $data = $dataLoader->{$function->getFunctionName()}(...$parameters);
             }
 
             $response = $this->buildByData(
@@ -111,8 +112,11 @@ class Builder implements ServiceInterface, BuilderInterface
         int $relationshipLevel=1
     ): array
     {
-        $response = [];
+        if (empty($data)) {
+            return [];
+        }
 
+        $response = [];
         if (array_key_exists(0, $data)) {
             foreach ($data ?? [] as $record) {
                 $response[] = $this->createBuilder(
@@ -170,7 +174,7 @@ class Builder implements ServiceInterface, BuilderInterface
                 }
 
                 if ($relationship->getDataFunction()->getType() === DataFunctionInterface::TYPE_TABLE){
-                    $data = $this->data->readByDataFunction(
+                    $relationshipData = $this->data->readByDataFunction(
                         $relationship->getDataFunction()
                     );
 
@@ -178,12 +182,12 @@ class Builder implements ServiceInterface, BuilderInterface
                     $dataLoader = $this->pools->get(
                         $relationship->getDataFunction()->getClassName()
                     );
-                    $data = $dataLoader->{$relationship->getDataFunction()->getFunctionName()}(...$relationship->getDataFunction()->getParameters());
+                    $relationshipData = $dataLoader->{$relationship->getDataFunction()->getFunctionName()}(...$relationship->getDataFunction()->getParameters());
                 }
 
 
-                if (array_key_exists(0, $data)) {
-                    foreach ($data ?? [] as $record) {
+                if (array_key_exists(0, $relationshipData)) {
+                    foreach ($relationshipData ?? [] as $record) {
                         $response->relationship(
                             $relationship->getName()
                         )->resourceLinkage->add(
@@ -194,13 +198,13 @@ class Builder implements ServiceInterface, BuilderInterface
                             )
                         );
                     }
-                } else {
+                } elseif (false === empty($relationshipData)){
                     $response->relationship(
                         $relationship->getName()
                     )->resourceLinkage->add(
                         $this->createBuilder(
                             builderClassName: $builderClassName,
-                            data: $data,
+                            data: $relationshipData,
                             relationshipLevel: $relationship->isDontLoadChildren() ? 0 : $relationshipLevel
                         )
                     );
