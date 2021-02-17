@@ -51,13 +51,15 @@ class Builder implements ServiceInterface, BuilderInterface
      * @param string $resourceTransformerClass
      * @param DataFunctionInterface $function
      * @param int $relationshipLevel
+     * @param array $additionalRelationshipData
      * @return array
      * @throws Exception
      */
     public function build(
         string $resourceTransformerClass,
         DataFunctionInterface $function,
-        int $relationshipLevel=1
+        int $relationshipLevel=1,
+        array $additionalRelationshipData=[],
     ): array
     {
         $response = null;
@@ -88,7 +90,8 @@ class Builder implements ServiceInterface, BuilderInterface
             $response = $this->buildByData(
                 resourceTransformerClass: $resourceTransformerClass,
                 data: $data,
-                relationshipLevel: $relationshipLevel
+                relationshipLevel: $relationshipLevel,
+                additionalRelationshipData: $additionalRelationshipData,
             );
 
             if ($this->cache !== null && $function->getCacheBuilder() !== null && $this->cache->useCaching()) {
@@ -103,13 +106,15 @@ class Builder implements ServiceInterface, BuilderInterface
      * @param string $resourceTransformerClass
      * @param array $data
      * @param int $relationshipLevel
+     * @param array $additionalRelationshipData
      * @return array
      * @throws Exception
      */
     public function buildByData(
         string $resourceTransformerClass,
         array $data,
-        int $relationshipLevel=1
+        int $relationshipLevel=1,
+        array $additionalRelationshipData=[],
     ): array
     {
         if (empty($data)) {
@@ -123,6 +128,7 @@ class Builder implements ServiceInterface, BuilderInterface
                     builderClassName: $resourceTransformerClass,
                     data: $record,
                     relationshipLevel: $relationshipLevel,
+                    additionalRelationshipData: $additionalRelationshipData,
                 );
             }
         } else {
@@ -130,6 +136,7 @@ class Builder implements ServiceInterface, BuilderInterface
                 builderClassName: $resourceTransformerClass,
                 data: $data,
                 relationshipLevel: $relationshipLevel,
+                additionalRelationshipData: $additionalRelationshipData,
             );
         }
 
@@ -140,6 +147,7 @@ class Builder implements ServiceInterface, BuilderInterface
      * @param string $builderClassName
      * @param array $data
      * @param int $relationshipLevel
+     * @param array $additionalRelationshipData
      * @return ResourceObject
      * @throws Exception
      */
@@ -147,6 +155,7 @@ class Builder implements ServiceInterface, BuilderInterface
         string $builderClassName,
         array $data,
         int $relationshipLevel,
+        array $additionalRelationshipData=[],
     ): ResourceObject
     {
         /** @var ResourceBuilderInterface $builder */
@@ -166,10 +175,17 @@ class Builder implements ServiceInterface, BuilderInterface
             /** @var RelationshipBuilder $relationship */
             foreach ($builder->getRelationshipReaders() ?? [] as $relationship) {
                 $builderClassName = $relationship->getBuilderClassName();
+                if (array_key_exists($relationship->getName(), $additionalRelationshipData)){
+                    $relationshipSpecificData = $additionalRelationshipData[$relationship->getName()];
+                } else {
+                    $relationshipSpecificData = [];
+                }
 
                 foreach ($relationship->getDataFunction()->getParameters() ?? [] as $parameterKey=>$parameterValue){
                     if (array_key_exists($parameterValue, $data)){
                         $relationship->getDataFunction()->replaceParameter($parameterKey, $data[$parameterValue]);
+                    } elseif (array_key_exists($parameterValue, $relationshipSpecificData)){
+                        $relationship->getDataFunction()->replaceParameter($parameterKey, $relationshipSpecificData[$parameterValue]);
                     }
                 }
 
