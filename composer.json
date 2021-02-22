@@ -1,7 +1,7 @@
 {
   "name": "carlonicora/minimalism-service-builder",
   "description": "builder service for minimalism",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "homepage": "https://carlonicora.com",
   "time": "2021-02-10",
   "license": "MIT",
@@ -23,6 +23,6 @@
   "require": {
     "php": ">=8.0",
     "ext-json": "*",
-    "carlonicora/minimalism": "~12.2"
+    "carlonicora/minimalism": "~12.4"
   }
 }

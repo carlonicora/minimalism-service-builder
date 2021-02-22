@@ -14,6 +14,7 @@ use CarloNicora\Minimalism\Interfaces\ServiceInterface;
 use CarloNicora\Minimalism\Services\Path;
 use CarloNicora\Minimalism\Services\Pools;
 use Exception;
+use RuntimeException;
 
 class Builder implements ServiceInterface, BuilderInterface
 {
@@ -181,19 +182,27 @@ class Builder implements ServiceInterface, BuilderInterface
                     $relationshipSpecificData = [];
                 }
 
+                $parameterValues = [];
                 foreach ($relationship->getDataFunction()->getParameters() ?? [] as $parameterKey=>$parameterValue){
-                    if (array_key_exists($parameterValue, $data)){
-                        $relationship->getDataFunction()->replaceParameter($parameterKey, $data[$parameterValue]);
-                    } elseif (array_key_exists($parameterValue, $relationshipSpecificData)){
-                        $relationship->getDataFunction()->replaceParameter($parameterKey, $relationshipSpecificData[$parameterValue]);
+                    if (array_key_exists($parameterValue, $data) && $data[$parameterValue] !== null){
+                        $parameterValues[$parameterKey] = $data[$parameterValue];
+                    } elseif (array_key_exists($parameterValue, $relationshipSpecificData) && $relationshipSpecificData[$parameterValue] !== null){
+                        $parameterValues[$parameterKey] = $relationshipSpecificData[$parameterValue];
+                    } elseif (false === $relationship->isOptional()) {
+                        throw new RuntimeException('Required parameter(s) for ' .  $relationship->getName() . ' relationship missed');
                     }
                 }
+
+                if (empty($parameterValues) && $relationship->isOptional()) {
+                    continue;
+                }
+
+                $relationship->getDataFunction()->replaceParameters($parameterValues);
 
                 if ($relationship->getDataFunction()->getType() === DataFunctionInterface::TYPE_TABLE){
                     $relationshipData = $this->data->readByDataFunction(
                         $relationship->getDataFunction()
                     );
-
                 } else {
                     $dataLoader = $this->pools->get(
                         $relationship->getDataFunction()->getClassName()
@@ -202,7 +211,7 @@ class Builder implements ServiceInterface, BuilderInterface
                 }
 
 
-                if (array_key_exists(0, $relationshipData)) {
+                if (isset($relationshipData) && array_key_exists(0, $relationshipData)) {
                     foreach ($relationshipData ?? [] as $record) {
                         $response->relationship(
                             $relationship->getName()
