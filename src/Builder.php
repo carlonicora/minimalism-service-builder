@@ -210,8 +210,17 @@ class Builder implements ServiceInterface, BuilderInterface
                     $relationshipData = $dataLoader->{$relationship->getDataFunction()->getFunctionName()}(...$relationship->getDataFunction()->getParameters());
                 }
 
+                if ((empty($relationshipData) || (array_key_exists(0, $relationshipData) && empty($relationshipData[0])))
+                    && $relationship->isOptional() === false
+                ) {
+                    throw new RuntimeException('Required ' . $relationship->getName() . ' relationship data missed');
+                }
 
                 if (isset($relationshipData) && array_key_exists(0, $relationshipData)) {
+                    if (empty($relationshipData[0])) {
+                        continue;
+                    }
+
                     foreach ($relationshipData ?? [] as $record) {
                         $response->relationship(
                             $relationship->getName()
