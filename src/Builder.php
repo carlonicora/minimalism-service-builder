@@ -222,15 +222,19 @@ class Builder implements ServiceInterface, BuilderInterface
                     }
 
                     foreach ($relationshipData ?? [] as $record) {
-                        $response->relationship(
+                        $resourceLinkage = $response->relationship(
                             $relationship->getName()
-                        )->resourceLinkage->add(
+                        )->resourceLinkage;
+
+                        $resourceLinkage->add(
                             $this->createBuilder(
                                 builderClassName: $builderClassName,
                                 data: $record,
                                 relationshipLevel: $relationship->isDontLoadChildren() ? 0 : $relationshipLevel
                             )
                         );
+
+                        $resourceLinkage->forceResourceList($relationship->isList());
                     }
                 } elseif (false === empty($relationshipData)){
                     $response->relationship(

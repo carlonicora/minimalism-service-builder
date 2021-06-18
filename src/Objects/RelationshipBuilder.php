@@ -12,6 +12,7 @@ class RelationshipBuilder
      * @param DataFunctionInterface $function
      * @param bool $dontLoadChildren
      * @param bool $isOptional
+     * @param bool $isList
      */
     public function __construct(
         private string $name,
@@ -19,6 +20,7 @@ class RelationshipBuilder
         private DataFunctionInterface $function,
         private bool $dontLoadChildren=false,
         private bool $isOptional = false,
+        private bool $isList = false
     )
     {
     }
@@ -45,6 +47,14 @@ class RelationshipBuilder
     public function isOptional(): bool
     {
         return $this->isOptional;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isList(): bool
+    {
+        return $this->isList;
     }
 
     /**
