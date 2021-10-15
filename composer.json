@@ -1,12 +1,12 @@
 {
   "name": "carlonicora/minimalism-service-builder",
   "description": "builder service for minimalism",
-  "version": "1.2.5",
+  "version": "1.2.6-beta1",
   "homepage": "https://carlonicora.com",
   "time": "2021-02-10",
   "license": "MIT",
   "type": "library",
-  "minimum-stability": "stable",
+  "minimum-stability": "beta",
   "authors": [
     {
       "name": "Carlo Nicora",
@@ -23,6 +23,6 @@
   "require": {
     "php": ">=8.0",
     "ext-json": "*",
-    "carlonicora/minimalism": "~12.4"
+    "carlonicora/minimalism": "~13.0"
   }
 }
