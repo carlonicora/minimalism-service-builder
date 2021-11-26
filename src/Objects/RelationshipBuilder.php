@@ -1,7 +1,7 @@
 <?php
 namespace CarloNicora\Minimalism\Services\Builder\Objects;
 
-use CarloNicora\Minimalism\Interfaces\DataFunctionInterface;
+use CarloNicora\Minimalism\Interfaces\Data\Interfaces\DataFunctionInterface;
 
 class RelationshipBuilder
 {

@@ -2,42 +2,41 @@
 namespace CarloNicora\Minimalism\Services\Builder;
 
 use CarloNicora\JsonApi\Objects\ResourceObject;
+use CarloNicora\Minimalism\Abstracts\AbstractService;
+use CarloNicora\Minimalism\Factories\MinimalismFactories;
+use CarloNicora\Minimalism\Interfaces\Cache\Enums\CacheType;
+use CarloNicora\Minimalism\Interfaces\Cache\Interfaces\CacheInterface;
+use CarloNicora\Minimalism\Interfaces\Data\Interfaces\DataFunctionInterface;
+use CarloNicora\Minimalism\Interfaces\Data\Interfaces\DataInterface;
+use CarloNicora\Minimalism\Interfaces\Encrypter\Interfaces\EncrypterInterface;
+use CarloNicora\Minimalism\Objects\ModelParameters;
 use CarloNicora\Minimalism\Services\Builder\Interfaces\ResourceBuilderInterface;
 use CarloNicora\Minimalism\Services\Builder\Objects\RelationshipBuilder;
-use CarloNicora\Minimalism\Interfaces\BuilderInterface;
-use CarloNicora\Minimalism\Interfaces\CacheBuilderInterface;
-use CarloNicora\Minimalism\Interfaces\CacheInterface;
-use CarloNicora\Minimalism\Interfaces\DataInterface;
-use CarloNicora\Minimalism\Interfaces\DataFunctionInterface;
-use CarloNicora\Minimalism\Interfaces\EncrypterInterface;
 use CarloNicora\Minimalism\Interfaces\ServiceInterface;
+use CarloNicora\Minimalism\Services\DataMapper\DataMapper;
+use CarloNicora\Minimalism\Services\DataMapper\Interfaces\BuilderInterface;
 use CarloNicora\Minimalism\Services\Path;
-use CarloNicora\Minimalism\Services\Pools;
 use Exception;
 use RuntimeException;
 
-class Builder implements ServiceInterface, BuilderInterface
+class Builder extends AbstractService implements BuilderInterface
 {
     /** @var ServiceInterface|null  */
     private ?ServiceInterface $transformer=null;
 
-    /**
-     * JsonApiBuilderFactory constructor.
-     * @param DataInterface $data
-     * @param Pools $pools
-     * @param EncrypterInterface $encrypter
-     * @param Path $path
-     * @param CacheInterface|null $cache
-     */
     public function __construct(
+        private MinimalismFactories $minimalismFactories,
         private DataInterface $data,
-        private Pools $pools,
+        private DataMapper $mapper,
         private EncrypterInterface $encrypter,
         private Path $path,
-        private ?CacheInterface $cache,
+        private ?CacheInterface $cache=null,
+
     )
     {
-        $this->pools->setBuilder($this);
+        parent::__construct();
+
+        $this->mapper->setBuilder($this);
     }
 
     /**
@@ -71,7 +70,10 @@ class Builder implements ServiceInterface, BuilderInterface
             &&
             $this->cache->useCaching()
         ) {
-            $response = $this->cache->read($function->getCacheBuilder(), CacheBuilderInterface::JSON);
+            $response = $this->cache->read(
+                builder: $function->getCacheBuilder()??throw new RuntimeException('Error using the cache builder', 500),
+                cacheBuilderType: CacheType::Json,
+            );
             if ($response !== null){
                 $response = unserialize($response, [true]);
             }
@@ -83,7 +85,9 @@ class Builder implements ServiceInterface, BuilderInterface
                     $function
                 );
             } else {
-                $dataLoader = $this->pools->get($function->getClassName());
+                $dataLoader = $this->minimalismFactories->getObjectFactory()->createSimpleObject(className: $function->getClassName(), parameters: new ModelParameters());
+
+
                 $parameters = $function->getParameters() ?? [];
                 $data = $dataLoader->{$function->getFunctionName()}(...$parameters);
             }
@@ -96,7 +100,11 @@ class Builder implements ServiceInterface, BuilderInterface
             );
 
             if ($this->cache !== null && $function->getCacheBuilder() !== null && $this->cache->useCaching()) {
-                $this->cache->save($function->getCacheBuilder(), serialize($response), CacheBuilderInterface::JSON);
+                $this->cache->save(
+                    builder: $function->getCacheBuilder()??throw new RuntimeException('Error using the cache builder', 500),
+                    data: serialize($response),
+                    cacheBuilderType: CacheType::Json,
+                );
             }
         }
 
@@ -204,9 +212,11 @@ class Builder implements ServiceInterface, BuilderInterface
                         $relationship->getDataFunction()
                     );
                 } else {
-                    $dataLoader = $this->pools->get(
-                        $relationship->getDataFunction()->getClassName()
+                    $dataLoader = $this->minimalismFactories->getObjectFactory()->createSimpleObject(
+                        className: $relationship->getDataFunction()->getClassName(),
+                        parameters: new ModelParameters(),
                     );
+
                     $relationshipData = $dataLoader->{$relationship->getDataFunction()->getFunctionName()}(...$relationship->getDataFunction()->getParameters());
                 }
 
@@ -251,19 +261,5 @@ class Builder implements ServiceInterface, BuilderInterface
         }
 
         return $response;
-    }
-
-    /**
-     *
-     */
-    public function initialise(): void
-    {
-    }
-
-    /**
-     *
-     */
-    public function destroy(): void
-    {
     }
 }

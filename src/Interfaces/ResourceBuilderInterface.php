@@ -2,7 +2,7 @@
 namespace CarloNicora\Minimalism\Services\Builder\Interfaces;
 
 use CarloNicora\JsonApi\Objects\ResourceObject;
-use CarloNicora\Minimalism\Interfaces\EncrypterInterface;
+use CarloNicora\Minimalism\Interfaces\Encrypter\Interfaces\EncrypterInterface;
 use CarloNicora\Minimalism\Interfaces\ServiceInterface;
 use CarloNicora\Minimalism\Services\Path;
 
