@@ -3,7 +3,7 @@ namespace CarloNicora\Minimalism\Services\Builder;
 
 use CarloNicora\JsonApi\Objects\ResourceObject;
 use CarloNicora\Minimalism\Abstracts\AbstractService;
-use CarloNicora\Minimalism\Factories\MinimalismFactories;
+use CarloNicora\Minimalism\Factories\ObjectFactory;
 use CarloNicora\Minimalism\Interfaces\Cache\Enums\CacheType;
 use CarloNicora\Minimalism\Interfaces\Cache\Interfaces\CacheInterface;
 use CarloNicora\Minimalism\Interfaces\Data\Interfaces\DataFunctionInterface;
@@ -24,8 +24,16 @@ class Builder extends AbstractService implements BuilderInterface
     /** @var ServiceInterface|null  */
     private ?ServiceInterface $transformer=null;
 
+    /**
+     * @param ObjectFactory $objectFactory
+     * @param DataInterface $data
+     * @param DataMapper $mapper
+     * @param EncrypterInterface $encrypter
+     * @param Path $path
+     * @param CacheInterface|null $cache
+     */
     public function __construct(
-        private MinimalismFactories $minimalismFactories,
+        private ObjectFactory $objectFactory,
         private DataInterface $data,
         private DataMapper $mapper,
         private EncrypterInterface $encrypter,
@@ -85,7 +93,7 @@ class Builder extends AbstractService implements BuilderInterface
                     $function
                 );
             } else {
-                $dataLoader = $this->minimalismFactories->getObjectFactory()->createSimpleObject(className: $function->getClassName(), parameters: new ModelParameters());
+                $dataLoader = $this->objectFactory->createSimpleObject(className: $function->getClassName(), parameters: new ModelParameters());
 
 
                 $parameters = $function->getParameters() ?? [];
@@ -212,7 +220,7 @@ class Builder extends AbstractService implements BuilderInterface
                         $relationship->getDataFunction()
                     );
                 } else {
-                    $dataLoader = $this->minimalismFactories->getObjectFactory()->createSimpleObject(
+                    $dataLoader = $this->objectFactory->createSimpleObject(
                         className: $relationship->getDataFunction()->getClassName(),
                         parameters: new ModelParameters(),
                     );
