@@ -13,6 +13,7 @@ use CarloNicora\Minimalism\Objects\ModelParameters;
 use CarloNicora\Minimalism\Services\Builder\Interfaces\ResourceBuilderInterface;
 use CarloNicora\Minimalism\Services\Builder\Objects\RelationshipBuilder;
 use CarloNicora\Minimalism\Interfaces\ServiceInterface;
+use CarloNicora\Minimalism\Services\DataMapper\Abstracts\AbstractDataObject;
 use CarloNicora\Minimalism\Services\DataMapper\DataMapper;
 use CarloNicora\Minimalism\Services\DataMapper\Interfaces\BuilderInterface;
 use CarloNicora\Minimalism\Services\Path;
@@ -121,7 +122,7 @@ class Builder extends AbstractService implements BuilderInterface
 
     /**
      * @param string $resourceTransformerClass
-     * @param array $data
+     * @param array|AbstractDataObject $data
      * @param int $relationshipLevel
      * @param array $additionalRelationshipData
      * @return array
@@ -129,11 +130,16 @@ class Builder extends AbstractService implements BuilderInterface
      */
     public function buildByData(
         string $resourceTransformerClass,
-        array $data,
+        array|AbstractDataObject $data,
         int $relationshipLevel=1,
         array $additionalRelationshipData=[],
     ): array
     {
+        if (!is_array($data))
+        {
+            $data = $data->export();
+        }
+
         if (empty($data)) {
             return [];
         }
@@ -162,7 +168,7 @@ class Builder extends AbstractService implements BuilderInterface
 
     /**
      * @param string $builderClassName
-     * @param array $data
+     * @param array|AbstractDataObject $data
      * @param int $relationshipLevel
      * @param array $additionalRelationshipData
      * @return ResourceObject
@@ -170,11 +176,16 @@ class Builder extends AbstractService implements BuilderInterface
      */
     private function createBuilder(
         string $builderClassName,
-        array $data,
+        array|AbstractDataObject $data,
         int $relationshipLevel,
         array $additionalRelationshipData=[],
     ): ResourceObject
     {
+        if (!is_array($data))
+        {
+            $data = $data->export();
+        }
+
         /** @var ResourceBuilderInterface $builder */
         $builder = new $builderClassName(
             path: $this->path,
