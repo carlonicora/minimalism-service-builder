@@ -13,9 +13,9 @@ use CarloNicora\Minimalism\Objects\ModelParameters;
 use CarloNicora\Minimalism\Services\Builder\Interfaces\ResourceBuilderInterface;
 use CarloNicora\Minimalism\Services\Builder\Objects\RelationshipBuilder;
 use CarloNicora\Minimalism\Interfaces\ServiceInterface;
-use CarloNicora\Minimalism\Services\DataMapper\Abstracts\AbstractDataObject;
 use CarloNicora\Minimalism\Services\DataMapper\DataMapper;
 use CarloNicora\Minimalism\Services\DataMapper\Interfaces\BuilderInterface;
+use CarloNicora\Minimalism\Services\DataMapper\Interfaces\DataObjectInterface;
 use CarloNicora\Minimalism\Services\Path;
 use Exception;
 use RuntimeException;
@@ -122,7 +122,7 @@ class Builder extends AbstractService implements BuilderInterface
 
     /**
      * @param string $resourceTransformerClass
-     * @param array|AbstractDataObject $data
+     * @param array|DataObjectInterface $data
      * @param int $relationshipLevel
      * @param array $additionalRelationshipData
      * @return array
@@ -130,13 +130,12 @@ class Builder extends AbstractService implements BuilderInterface
      */
     public function buildByData(
         string $resourceTransformerClass,
-        array|AbstractDataObject $data,
+        array|DataObjectInterface $data,
         int $relationshipLevel=1,
         array $additionalRelationshipData=[],
     ): array
     {
-        if (!is_array($data))
-        {
+        if (!is_array($data)) {
             $data = $data->export();
         }
 
@@ -145,7 +144,7 @@ class Builder extends AbstractService implements BuilderInterface
         }
 
         $response = [];
-        if (array_key_exists(0, $data)) {
+        if (array_is_list($data)) {
             foreach ($data ?? [] as $record) {
                 $response[] = $this->createBuilder(
                     builderClassName: $resourceTransformerClass,
@@ -168,7 +167,7 @@ class Builder extends AbstractService implements BuilderInterface
 
     /**
      * @param string $builderClassName
-     * @param array|AbstractDataObject $data
+     * @param array|DataObjectInterface $data
      * @param int $relationshipLevel
      * @param array $additionalRelationshipData
      * @return ResourceObject
@@ -176,7 +175,7 @@ class Builder extends AbstractService implements BuilderInterface
      */
     private function createBuilder(
         string $builderClassName,
-        array|AbstractDataObject $data,
+        array|DataObjectInterface $data,
         int $relationshipLevel,
         array $additionalRelationshipData=[],
     ): ResourceObject
@@ -227,6 +226,7 @@ class Builder extends AbstractService implements BuilderInterface
                 $relationship->getDataFunction()->replaceParameters($parameterValues);
 
                 if ($relationship->getDataFunction()->getType() === DataFunctionInterface::TYPE_TABLE){
+                    /** @var array|DataObjectInterface $relationshipData */
                     $relationshipData = $this->data->readByDataFunction(
                         $relationship->getDataFunction()
                     );
@@ -236,7 +236,12 @@ class Builder extends AbstractService implements BuilderInterface
                         parameters: new ModelParameters(),
                     );
 
+                    /** @var array|DataObjectInterface $relationshipData */
                     $relationshipData = $dataLoader->{$relationship->getDataFunction()->getFunctionName()}(...$relationship->getDataFunction()->getParameters());
+                }
+
+                if (!is_array($relationshipData)){
+                    $relationshipData = $relationshipData->export();
                 }
 
                 if ((empty($relationshipData) || (array_key_exists(0, $relationshipData) && empty($relationshipData[0])))
