@@ -122,7 +122,7 @@ class Builder extends AbstractService implements BuilderInterface
 
     /**
      * @param string $resourceTransformerClass
-     * @param array|DataObjectInterface $data
+     * @param array|DataObjectInterface[]|DataObjectInterface $data
      * @param int $relationshipLevel
      * @param array $additionalRelationshipData
      * @return array
@@ -135,9 +135,7 @@ class Builder extends AbstractService implements BuilderInterface
         array $additionalRelationshipData=[],
     ): array
     {
-        if (!is_array($data)) {
-            $data = $data->export();
-        }
+        $data = !is_array($data) ? $data->export() : $data;
 
         if (empty($data)) {
             return [];
@@ -146,6 +144,7 @@ class Builder extends AbstractService implements BuilderInterface
         $response = [];
         if (array_is_list($data)) {
             foreach ($data ?? [] as $record) {
+                $record = !is_array($record) ? $record->export() : $record;
                 $response[] = $this->createBuilder(
                     builderClassName: $resourceTransformerClass,
                     data: $record,
@@ -240,11 +239,9 @@ class Builder extends AbstractService implements BuilderInterface
                     $relationshipData = $dataLoader->{$relationship->getDataFunction()->getFunctionName()}(...$relationship->getDataFunction()->getParameters());
                 }
 
-                if (!is_array($relationshipData)){
-                    $relationshipData = $relationshipData->export();
-                }
+                $relationshipData = !is_array($relationshipData) ? $relationshipData->export() : $relationshipData;
 
-                if ((empty($relationshipData) || (array_key_exists(0, $relationshipData) && empty($relationshipData[0])))
+                if ((empty($relationshipData) || (array_is_list($relationshipData) && empty($relationshipData[0])))
                     && $relationship->isOptional() === false
                 ) {
                     throw new RuntimeException('Required ' . $relationship->getName() . ' relationship data missed');
