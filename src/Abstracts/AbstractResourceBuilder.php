@@ -2,6 +2,7 @@
 namespace CarloNicora\Minimalism\Services\Builder\Abstracts;
 
 use CarloNicora\JsonApi\Objects\ResourceObject;
+use CarloNicora\Minimalism\Factories\ObjectFactory;
 use CarloNicora\Minimalism\Interfaces\Encrypter\Interfaces\EncrypterInterface;
 use CarloNicora\Minimalism\Services\Builder\Interfaces\ResourceBuilderInterface;
 use CarloNicora\Minimalism\Interfaces\ServiceInterface;
@@ -18,12 +19,14 @@ abstract class AbstractResourceBuilder implements ResourceBuilderInterface
 
     /**
      * UserBuilder constructor.
+     * @param ObjectFactory $objectFactory
      * @param Path $path
      * @param EncrypterInterface $encrypter
      * @param ServiceInterface|null $transformer
      * @throws Exception
      */
     public function __construct(
+        protected ObjectFactory $objectFactory,
         protected Path $path,
         protected EncrypterInterface $encrypter,
         protected ?ServiceInterface $transformer=null,

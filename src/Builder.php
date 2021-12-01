@@ -186,6 +186,7 @@ class Builder extends AbstractService implements BuilderInterface
 
         /** @var ResourceBuilderInterface $builder */
         $builder = new $builderClassName(
+            objectFactory: $this->objectFactory,
             path: $this->path,
             encrypter: $this->encrypter,
             transformer: $this->transformer,
