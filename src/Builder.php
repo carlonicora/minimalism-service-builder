@@ -143,7 +143,7 @@ class Builder extends AbstractService implements BuilderInterface
 
         $response = [];
         if (array_is_list($data)) {
-            foreach ($data ?? [] as $record) {
+            foreach ($data as $record) {
                 $record = !is_array($record) ? $record->export() : $record;
                 $response[] = $this->createBuilder(
                     builderClassName: $resourceTransformerClass,
@@ -248,7 +248,7 @@ class Builder extends AbstractService implements BuilderInterface
                     throw new RuntimeException('Required ' . $relationship->getName() . ' relationship data missed');
                 }
 
-                if (isset($relationshipData) && array_key_exists(0, $relationshipData)) {
+                if (array_key_exists(0, $relationshipData)) {
                     if (empty($relationshipData[0])) {
                         continue;
                     }
