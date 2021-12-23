@@ -21,10 +21,10 @@
     }
   },
   "require": {
-    "php": ">=8.0",
+    "php": ">=8.1",
     "ext-json": "*",
     "carlonicora/jsonapi": "~3.0",
-    "carlonicora/minimalism": "~13.0",
+    "carlonicora/minimalism": "~13.0.1",
     "carlonicora/minimalism-interface-cache": "~1.0",
     "carlonicora/minimalism-interface-data": "~1.0",
     "carlonicora/minimalism-interface-encrypter": "~1.0",

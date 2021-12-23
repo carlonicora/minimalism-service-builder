@@ -3,7 +3,7 @@ version: '3.8'
 services:
   minimalism-service-buidler:
     container_name: minimalism-service-builder
-    image: carlonicora/minimalism-service-builder:1.0
+    image: carlonicora/minimalism-service-builder:2.0
     build:
       context: .
       dockerfile: ./php-cli/Dockerfile
