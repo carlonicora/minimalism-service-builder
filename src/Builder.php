@@ -3,7 +3,6 @@ namespace CarloNicora\Minimalism\Services\Builder;
 
 use CarloNicora\JsonApi\Objects\ResourceObject;
 use CarloNicora\Minimalism\Abstracts\AbstractService;
-use CarloNicora\Minimalism\Factories\ObjectFactory;
 use CarloNicora\Minimalism\Interfaces\Cache\Enums\CacheType;
 use CarloNicora\Minimalism\Interfaces\Cache\Interfaces\CacheInterface;
 use CarloNicora\Minimalism\Interfaces\Data\Interfaces\DataFunctionInterface;
@@ -26,7 +25,6 @@ class Builder extends AbstractService implements BuilderInterface
     private ?ServiceInterface $transformer=null;
 
     /**
-     * @param ObjectFactory $objectFactory
      * @param DataInterface $data
      * @param DataMapper $mapper
      * @param EncrypterInterface $encrypter
@@ -34,7 +32,6 @@ class Builder extends AbstractService implements BuilderInterface
      * @param CacheInterface|null $cache
      */
     public function __construct(
-        private ObjectFactory $objectFactory,
         private DataInterface $data,
         private DataMapper $mapper,
         private EncrypterInterface $encrypter,
@@ -143,7 +140,7 @@ class Builder extends AbstractService implements BuilderInterface
 
         $response = [];
         if (array_is_list($data)) {
-            foreach ($data ?? [] as $record) {
+            foreach ($data as $record) {
                 $record = !is_array($record) ? $record->export() : $record;
                 $response[] = $this->createBuilder(
                     builderClassName: $resourceTransformerClass,
@@ -214,7 +211,7 @@ class Builder extends AbstractService implements BuilderInterface
                         $parameterValues[$parameterKey] = $data[$parameterValue];
                     } elseif (array_key_exists($parameterValue, $relationshipSpecificData) && $relationshipSpecificData[$parameterValue] !== null){
                         $parameterValues[$parameterKey] = $relationshipSpecificData[$parameterValue];
-                    } elseif (false === $relationship->isOptional()) {
+                    } elseif (!$relationship->isOptional()) {
                         throw new RuntimeException('Required parameter(s) for ' .  $relationship->getName() . ' relationship missed');
                     }
                 }
@@ -243,12 +240,12 @@ class Builder extends AbstractService implements BuilderInterface
                 $relationshipData = !is_array($relationshipData) ? $relationshipData->export() : $relationshipData;
 
                 if ((empty($relationshipData) || (array_is_list($relationshipData) && empty($relationshipData[0])))
-                    && $relationship->isOptional() === false
+                    && !$relationship->isOptional()
                 ) {
                     throw new RuntimeException('Required ' . $relationship->getName() . ' relationship data missed');
                 }
 
-                if (isset($relationshipData) && array_key_exists(0, $relationshipData)) {
+                if (array_key_exists(0, $relationshipData)) {
                     if (empty($relationshipData[0])) {
                         continue;
                     }
@@ -268,7 +265,7 @@ class Builder extends AbstractService implements BuilderInterface
 
                         $resourceLinkage->forceResourceList($relationship->isList());
                     }
-                } elseif (false === empty($relationshipData)){
+                } elseif (!empty($relationshipData)){
                     $response->relationship(
                         $relationship->getName()
                     )->resourceLinkage->add(
