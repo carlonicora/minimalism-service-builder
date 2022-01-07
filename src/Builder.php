@@ -93,7 +93,6 @@ class Builder extends AbstractService implements BuilderInterface
             } else {
                 $dataLoader = $this->objectFactory->createSimpleObject(className: $function->getClassName(), parameters: new ModelParameters());
 
-
                 $parameters = $function->getParameters() ?? [];
                 $data = $dataLoader->{$function->getFunctionName()}(...$parameters);
             }
