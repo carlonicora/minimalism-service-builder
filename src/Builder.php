@@ -40,8 +40,6 @@ class Builder extends AbstractService implements BuilderInterface
 
     )
     {
-        parent::__construct();
-
         $this->mapper->setBuilder($this);
     }
 
