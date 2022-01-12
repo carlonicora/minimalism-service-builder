@@ -285,6 +285,5 @@ class Builder extends AbstractService implements BuilderInterface
     public function destroy(): void
     {
         parent::destroy();
-        $this->transformer = null;
     }
 }
