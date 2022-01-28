@@ -278,4 +278,12 @@ class Builder extends AbstractService implements BuilderInterface
 
         return $response;
     }
+
+    /**
+     * @return void
+     */
+    public function destroy(): void
+    {
+        parent::destroy();
+    }
 }
